@@ -17,11 +17,9 @@ class MysqlConnector {
         });
     }
 
-    query (queryString) {
+    query (queryString, rowProcessFunc=console.log) {
         this.pool.getConnection((errConn, connection) => {
-            console.log(connection);
             if (errConn) {
-                connection.release();
                 throw errConn;
             }
 
@@ -32,9 +30,13 @@ class MysqlConnector {
             });
 
             res.on('result', (row) => {
-                connection.pause();
-                console.log(row);
-                connection.resume();
+                // connection.pause();
+                rowProcessFunc(row);
+                // connection.resume();
+            });
+
+            res.on('end', () => {
+                connection.release();
             });
         });
     }
@@ -55,4 +57,4 @@ class MysqlConnector {
 const connector = new MysqlConnector('host', 'uname', 'pswd', 'dbname');
 connector.print();
 connector.query('select * from dbtable');
-connector.endConnect();
+// connector.endConnect();
